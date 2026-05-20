@@ -56,6 +56,10 @@ async function createMainWindow() {
         }
     });
 
+    // 1. 로딩 화면 먼저 표시
+    await win.loadFile(path.join(__dirname, '../renderer/loading/loading.html'));
+
+    // 2. 실제 시작 화면으로 전환
     await win.loadFile(path.join(__dirname, '../renderer/index/index.html'));
     return win;
 }

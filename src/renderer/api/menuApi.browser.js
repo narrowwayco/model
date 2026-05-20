@@ -192,6 +192,21 @@ async function requestAppShutdown() {
 }
 
 // 프로그램 리프레시 API 호출 함수
+async function requestPcRestart() {
+    const response = await fetch(`${url}/restart-pc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || result.success === false) {
+        throw new Error(result.error || result.message || 'PC 재부팅 요청에 실패했습니다.');
+    }
+
+    console.log('PC 재부팅 요청 성공:', result.message);
+    return result;
+}
+
 async function requestAppRefresh() {
     try {
         const response = await fetch(`${url}/order-refresh`, {
@@ -367,6 +382,7 @@ export {
     calculateSalesStatistics,
     requestAppRestart,
     requestAppShutdown,
+    requestPcRestart,
     fetchCupPlUse,
     fetchCupPaUse,
     adminUseWash,

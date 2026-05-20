@@ -36,6 +36,18 @@ const log = require('./logger');
 const fs = require('fs');
 const {setupCloudflare, stopCloudflareTunnel, checkTunnelHealth} = require("./cloudflare/cloudflared");
 
+function registerAutoLaunch() {
+    try {
+        app.setLoginItemSettings({
+            openAtLogin: true,
+            path: process.execPath,
+        });
+        log.info(`[DEBUG] Auto launch registered: ${process.execPath}`);
+    } catch (error) {
+        log.error(`[DEBUG] Auto launch registration failed: ${error.message}`);
+    }
+}
+
 // 디렉토리 확인 및 생성
 const basePath = getBasePath(); // getBasePath 함수 호출
 if (!fs.existsSync(basePath)) {
@@ -189,6 +201,7 @@ async function initializeApp() {
 })();
 
 app.whenReady().then(() => {
+    registerAutoLaunch();
     initializeApp().catch((err) => log.info('App initialization failed:', err));
 });
 

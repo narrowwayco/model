@@ -1,5 +1,6 @@
 const express = require('express');
 const { app, BrowserWindow } = require('electron');
+const { exec } = require('child_process');
 const serialDataManager  = require('../../services/serialDataManager');
 const Connect = express.Router();
 const log = require('../../logger');
@@ -203,6 +204,24 @@ Connect.post('/shutdown-app', (req, res) => {
         res.json({ success: true, message: '앱이 종료됩니다.' });
     } catch (err) {
         log.error('프로그램 종료 중 오류 발생:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+Connect.post('/restart-pc', (req, res) => {
+    try {
+        log.info('PC 재부팅 명령 수신');
+        res.json({ success: true, message: 'PC 재부팅을 시작합니다.' });
+
+        setTimeout(() => {
+            exec('shutdown /r /t 3', (error) => {
+                if (error) {
+                    log.error('PC 재부팅 실행 실패:', error.message);
+                }
+            });
+        }, 1000);
+    } catch (err) {
+        log.error('PC 재부팅 요청 처리 중 오류 발생:', err.message);
         res.status(500).json({ success: false, error: err.message });
     }
 });
