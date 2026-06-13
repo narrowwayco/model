@@ -78,7 +78,8 @@ class SerialPortManager {
                 const newlineIndex = this.asciiBuffer.indexOf('\n');
                 const asciiPacket = this.asciiBuffer.slice(0, newlineIndex + 1).trim(); // 줄 단위로 추출
                 this._processAsciiData(asciiPacket); // ASCII 처리
-                this.asciiBuffer = ''; // 사용한 데이터 제거
+                // 여러 RD 응답이 한 번에 들어와도 뒤쪽 패킷을 버리지 않도록 처리한 줄만 제거한다.
+                this.asciiBuffer = this.asciiBuffer.slice(newlineIndex + 1);
             }
         }
     }

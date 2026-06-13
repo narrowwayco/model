@@ -1,6 +1,11 @@
 // 응답 데이터 분석
 const parseSerialDataRd1 = (response) => {
+    const autoOperationStateRaw = response[31];
     return {
+        // PCB 변경 후 간헐 실패 판단용: Windows 테스트 로그에서 RD1 원문/길이/상태 원본값을 확인한다.
+        _raw: response,
+        _length: response.length,
+        _autoOperationStateRaw: autoOperationStateRaw,
         boilerTemperature: parseInt(response.slice(3, 6), 10),     // 보일러 온도 (123 = 123도)
         boilerHeaterStatus: response[6] === '1' ? 'ON' : 'OFF',         // 히터 상태
         boilerFlowRate: parseInt(response.slice(7, 10), 10),       // 플로우미터1 유량
@@ -21,7 +26,7 @@ const parseSerialDataRd1 = (response) => {
         grinderMotor2: response[28] === '1' ? 'ON' : 'OFF',             // 그라인더 모터2 상태
         chutePosition: getChutePosition(response[29]),                  // 슈트 위치 상태
         extractorHomeComplete: response[30] === '1' ? 'ON' : 'OFF',     // 추출기 원점 완료 상태
-        autoOperationState: getAutoOperationState(response[31]),        // 자동 운전 상태
+        autoOperationState: getAutoOperationState(autoOperationStateRaw),        // 자동 운전 상태
         hotWaterReady: response[32] === '1' ? '완료' : '준비안됨',        // 핫워터 온도 준비 상태
         cupSensor: response[33] === '1' ? '있음' : '없음',               // 컵 센서
         waterAlarm: response[34] === '1' ? '물없음' : '정상',            // 물 없음 알람

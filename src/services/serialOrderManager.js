@@ -531,6 +531,10 @@ const checkAutoOperationState = async (expectedState, threshold) => {
     let stateCount = 0; // 상태 카운터
     const initialFailTimeout = 3000; // ✅ 초기 실패 감지 시간(ms)
     const startTimeOverall = Date.now();
+    let lastState = null;
+    let lastRawValue = null;
+    let lastRawPacket = null;
+    let previousState = null;
 
     const fastFailCategories = ['커피', '시럽', '가루차']; // ✅ 빠른 실패 감지할 카테고리
 
@@ -539,9 +543,20 @@ const checkAutoOperationState = async (expectedState, threshold) => {
 
         await McData.updateSerialData('RD1', 'RD1');
         const data = McData.getSerialData('RD1');
-        console.log(`머신상태: ${data.autoOperationState} `);
+        const currentState = data?.autoOperationState;
+        const currentRawValue = data?._autoOperationStateRaw;
+        // PCB 진단 로그: expected/state/rawState를 비교해 정지값(0)이 실제로 내려오는지 확인한다.
+        if (counter === 0 || currentState !== previousState || counter % 10 === 0) {
+            log.info(`[RD1 CHECK] expected=${expectedState}, state=${currentState}, rawState=${currentRawValue}, length=${data?._length}, count=${stateCount}, loop=${counter}`);
+            log.info(`[RD1 RAW] ${data?._raw}`);
+        }
+        previousState = currentState;
+        lastState = currentState;
+        lastRawValue = currentRawValue;
+        lastRawPacket = data?._raw;
+        console.log(`머신상태: ${currentState} `);
 
-        if (data.autoOperationState === expectedState) {
+        if (currentState === expectedState) {
             stateCount++;
             // ✅ 로그 출력
             if ((counter % 10) === 0) {
@@ -563,7 +578,7 @@ const checkAutoOperationState = async (expectedState, threshold) => {
             (Date.now() - startTimeOverall) >= initialFailTimeout &&
             stateCount === 0
         ) {
-            log.warn(`빠른 실패: '${expectedState}' 상태 ${initialFailTimeout / 1000}s 안에 감지 못함`);
+            log.warn(`빠른 실패: '${expectedState}' 상태 ${initialFailTimeout / 1000}s 안에 감지 못함. lastState=${lastState}, rawState=${lastRawValue}, raw=${lastRawPacket}`);
             return false;
         }
 
@@ -575,7 +590,7 @@ const checkAutoOperationState = async (expectedState, threshold) => {
         }
     }
 
-    log.warn(`머신 동작확인 타임아웃, 카테고리명: '${expectedState}'.`);
+    log.warn(`머신 동작확인 타임아웃, 카테고리명: '${expectedState}', lastState=${lastState}, rawState=${lastRawValue}, raw=${lastRawPacket}`);
     return false; // 타임아웃 처리
 };
 
