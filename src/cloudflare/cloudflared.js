@@ -9,9 +9,10 @@ const {homedir} = require("node:os");
 // ✅ Electron이 실행된 디렉토리를 가져옴 (설치된 실제 경로)
 const basePath = path.dirname(app.getPath('exe')); // model.exe의 디렉토리 찾기
 const cloudflaredDir = path.join(basePath, 'cloudflared'); // Cloudflare 실행 폴더
-const cloudflaredPath = path.join(cloudflaredDir, 'cloudflared.exe');
 const configFile = path.join(cloudflaredDir, 'config.yml');
-const cloudflaredBin = path.join(cloudflaredDir, process.platform === 'win32' ? 'cloudflared.exe' : 'cloudflared');
+const bundledCloudflaredBin = path.join(cloudflaredDir, process.platform === 'win32' ? 'cloudflared.exe' : 'cloudflared');
+const systemCloudflaredBin = process.platform === 'win32' ? 'cloudflared.exe' : 'cloudflared';
+const cloudflaredBin = fs.existsSync(bundledCloudflaredBin) ? bundledCloudflaredBin : systemCloudflaredBin;
 const oldCertFile = path.join(cloudflaredDir, 'cert.pem');
 let certFile;
 let credentialsFile;
@@ -33,13 +34,18 @@ async function getOrCreateTunnel(tunnelName = "model-app") {
 
         certFile = path.join(homedir(), ".cloudflared", "cert.pem");
 
-        log.info("🔍 기존 cert 인증서 복사 시작... ");
-        try {
-           fs.copyFileSync(oldCertFile, certFile);
-           log.info(`✅ cert JSON 파일 복사 완료: ${certFile}`);
-        } catch (err) {
-           throw new Error(`❌ cert 인증서 복사 실패: ${err.message}`);
-
+        log.info("🔍 Cloudflare cert 인증서 확인 중... ");
+        if (fs.existsSync(oldCertFile)) {
+            try {
+               fs.copyFileSync(oldCertFile, certFile);
+               log.info(`✅ cert 파일 복사 완료: ${certFile}`);
+            } catch (err) {
+               throw new Error(`❌ cert 인증서 복사 실패: ${err.message}`);
+            }
+        } else if (fs.existsSync(certFile)) {
+            log.info(`✅ 기존 cert 파일 사용: ${certFile}`);
+        } else {
+            throw new Error(`❌ Cloudflare cert.pem 없음. 먼저 'cloudflared tunnel login'으로 인증이 필요합니다: ${certFile}`);
         }
 
         log.info("🔍 기존 Cloudflare 터널 UUID 확인 중... tunnelName: ", tunnelName);
@@ -146,11 +152,13 @@ function stopCloudflareTunnel() {
         log.info("⚠️ Cloudflare Tunnel 종료 중...");
         cloudflareProcess.kill('SIGTERM');
         cloudflareProcess = null;
-        try {
-            execSync('taskkill /F /IM cloudflared.exe'); // 강제 종료
-            log.info("✅ Cloudflare Tunnel 강제 종료 완료 (Windows)");
-        } catch (error) {
-            log.error("❌ Cloudflare 종료 실패 (Windows):", error.message);
+        if (process.platform === 'win32') {
+            try {
+                execSync('taskkill /F /IM cloudflared.exe'); // 강제 종료
+                log.info("✅ Cloudflare Tunnel 강제 종료 완료 (Windows)");
+            } catch (error) {
+                log.error("❌ Cloudflare 종료 실패 (Windows):", error.message);
+            }
         }
     }
 }
@@ -194,7 +202,7 @@ function startCloudflareTunnel() {
 
     // ✅ Cloudflare Tunnel 실행
     log.info("🚀 Cloudflare Tunnel 실행 중...");
-    cloudflareProcess = spawn(cloudflaredPath, ['tunnel', '--config', configFile, 'run'], { shell: true });
+    cloudflareProcess = spawn(cloudflaredBin, ['tunnel', '--config', configFile, 'run'], { shell: true });
 
     cloudflareProcess.stdout.on('data', (data) => log.info(`Cloudflared: ${data}`));
     cloudflareProcess.stderr.on('data', (data) => log.info(`Cloudflared log: ${data}`));
@@ -237,6 +245,7 @@ async function setupCloudflare(userId) {
 async function generateConfigYml(tunnelUUID, url) {
     try {
         log.info("🚀 config.yml 생성 중...");
+        fs.mkdirSync(cloudflaredDir, { recursive: true });
         log.info("🚀 tunnelUUID 생성 중...", tunnelUUID);
         if (!url) {
             log.error("❌ 사용자 URL 정보 없음!");

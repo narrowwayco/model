@@ -3,7 +3,7 @@
   "version": "2.2.3",
   "main": "src/main.js",
   "scripts": {
-    "start": "npx tailwindcss build src/styles/tailwind.css -o src/styles/output.css && set NODE_ENV=development && electron .",
+    "start": "npx tailwindcss build src/styles/tailwind.css -o src/styles/output.css && cross-env NODE_ENV=development electron .",
     "build:css": "npx tailwindcss -i ./src/styles/tailwind.css -o ./src/styles/output.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "electron-builder"

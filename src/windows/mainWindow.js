@@ -56,8 +56,11 @@ async function createMainWindow() {
         }
     });
 
-    // 1. 로딩 화면 먼저 표시
-    await win.loadFile(path.join(__dirname, '../renderer/loading/loading.html'));
+    // 1. 로딩 화면이 있으면 먼저 표시
+    const loadingPath = path.join(__dirname, '../renderer/loading/loading.html');
+    if (require('fs').existsSync(loadingPath)) {
+        await win.loadFile(loadingPath);
+    }
 
     // 2. 실제 시작 화면으로 전환
     await win.loadFile(path.join(__dirname, '../renderer/index/index.html'));
