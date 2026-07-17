@@ -2,8 +2,17 @@
 
 참고
 2026-07-04 - 지금은 AWS 계정 설정이 안되어있습니다. 차주 계정을 받으면 설정을 진행 할 예정이고 지금은 현 문서 및 소스 분석을 진행하시면됩니다. 
+             테스트 계정은 직접생성 해서 사용하셔도 됩니다.
+2026-07-17 - 머신 빌드 위치 
+             C:\modelRoot\model
+             머신 빋드 명령어 
+             npm run build
+             머신 빌드파일 경로 .exe
+|            C:\modelRoot\model\dist
+             
 
-
+mode-admin
+로컬로그분석: http://localhost:5173/html/localLogAnalyzer.html
 
 작성일: 2026-06-26  
 최종 보완일: 2026-07-03  
@@ -30,7 +39,7 @@
 경로:
 
 ```powershell
-cd C:\Users\perop\WebstormProjects\model
+cd C:\modelRoot\model
 ```
 
 명령:
@@ -53,7 +62,7 @@ npm.cmd run build
 경로:
 
 ```powershell
-cd C:\Users\perop\WebstormProjects\mode-admin
+cd C:\modelRoot\mode-admin
 ```
 
 명령:

@@ -1,5 +1,6 @@
 const log = require("../../logger");
 const { ipcRenderer } = require('electron');
+const { API_BASE_URL } = require('../../config/apiConfig');
 
 // 전역 변수 선언
 let userData = null;
@@ -434,7 +435,7 @@ const getCoupon = async (couponCode) => {
     }
 
     const url =
-        `https://api.narrowroad-model.com/model_coupon?func=getCouponOne` +
+        `${API_BASE_URL}/model_coupon?func=getCouponOne` +
         `&userId=${encodeURIComponent(userData.userId)}` +
         `&couponCode=${encodeURIComponent(couponCode)}`;
 
@@ -478,7 +479,7 @@ const useCoupon = async (couponArray) => {
         };
     }
 
-    const url = "https://api.narrowroad-model.com/model_coupon?func=useCoupon";
+    const url = `${API_BASE_URL}/model_coupon?func=useCoupon`;
 
     try {
         const res = await fetch(url, {
@@ -740,7 +741,7 @@ function buildBarcodeRequest(amount, barcode, halbu = "00") {
 const getInventoryStatus = async (userId) => {
     try {
         const res = await fetch(
-            `https://api.narrowroad-model.com/model_inventory_calculate?func=get-runtime&userId=${userId}`,
+            `${API_BASE_URL}/model_inventory_calculate?func=get-runtime&userId=${userId}`,
             {
                 method: "GET",
                 headers: {

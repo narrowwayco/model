@@ -1,9 +1,10 @@
 const log = require("../../logger");
+const { API_BASE_URL } = require('../../config/apiConfig');
 
 
 const setUserInfo = async (userInfo) => {
     try {
-        const response = await fetch('https://api.narrowroad-model.com/model_new_store', {
+        const response = await fetch(`${API_BASE_URL}/model_new_store`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -119,7 +120,7 @@ const fetchAndSaveUserInfo = async () => {
 
 const postMachineHealthCheck = async (userInfo) => {
     try {
-        const response = await fetch('https://api.narrowroad-model.com/model_machine_health_check', {
+        const response = await fetch(`${API_BASE_URL}/model_machine_health_check`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -1,7 +1,8 @@
 const log = require("../../logger");
+const { API_BASE_URL } = require("../../config/apiConfig");
 
 const INVENTORY_CALC_URL =
-    "https://api.narrowroad-model.com/model_inventory_calculate?func=calculate-inventory";
+    `${API_BASE_URL}/model_inventory_calculate?func=calculate-inventory`;
 
 /**
  * 머신1용: 재고 계산 요청 (비차단)

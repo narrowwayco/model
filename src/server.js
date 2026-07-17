@@ -13,6 +13,7 @@ const { createServer } = require('http');
 const { serialCommCom1, serialCommCom3, serialCommCom4 } = require('./serial/serialCommManager');
 const { getBasePath } = require('./aws/s3/utils/cacheDirManager');
 const {checkForUpdatesManually} = require("./updater");
+const { API_BASE_URL } = require('./config/apiConfig');
 const app = express();
 const server = createServer(app);
 const { getMainWindow } = require('./windows/mainWindow');
@@ -25,7 +26,7 @@ const { ipcMain } = require('electron');
 const {getUser} = require("./util/store");
 const LOG_DIR = path.join(electronApp.getPath('appData'), 'model', 'logs');
 
-const BARCODE_API_BASE = 'https://api.narrowroad-model.com/model_barcode_scan';
+const BARCODE_API_BASE = `${API_BASE_URL}/model_barcode_scan`;
 
 log.info(`NODE_ENV: "${process.env.NODE_ENV}"`); // 값 출력
 log.info(`App Path: ${appPath}`);

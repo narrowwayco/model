@@ -35,6 +35,9 @@ const { getBasePath } = require(path.resolve(__dirname, './aws/s3/utils/cacheDir
 const log = require('./logger');
 const fs = require('fs');
 const {setupCloudflare, stopCloudflareTunnel, checkTunnelHealth} = require("./cloudflare/cloudflared");
+const { API_BASE_URL } = require('./config/apiConfig');
+
+
 
 function registerAutoLaunch() {
     try {
@@ -95,7 +98,7 @@ async function initializeApp() {
                     };
 
                     axios.post(
-                      "https://api.narrowroad-model.com/model_machine_registry?func=register-machine",
+                      `${API_BASE_URL}/model_machine_registry?func=register-machine`,
                       machineInfo,
                       {
                           headers: {
@@ -120,7 +123,7 @@ async function initializeApp() {
         const postMachineHealthCheck = async () => {
             try {
                 const res = await axios.post(
-                    "https://api.narrowroad-model.com/model_machine_health_check",
+                    `${API_BASE_URL}/model_machine_health_check`,
                     {}, // 👈 body 필요 없으니 빈 객체
                     {
                         headers: {
