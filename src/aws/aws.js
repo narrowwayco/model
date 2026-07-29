@@ -19,4 +19,7 @@ const dynamoDB = new AWS.DynamoDB.DocumentClient();
 // S3 클라이언트 생성
 const s3 = new AWS.S3();
 
-module.exports = { dynamoDB, s3 };
+// S3 버킷 이름
+const s3BucketName = 'narrowwayco-model-narrow-road';
+
+module.exports = { dynamoDB, s3, s3BucketName };

@@ -3,6 +3,7 @@ const log = require('../../../logger');
 const { getCounterValue, incrementCounter} = require('./getCount');
 const { getUser } = require('../../../util/store');  // 유틸 함수 가져오기
 let user;
+const { s3BucketName } = require('../../aws'); // aws.js에서 s3BucketName 가져오기
 
 const processUserAndProduct = async () => {
     // 사용자 정보 가져오기
@@ -384,7 +385,6 @@ const getAllProductsByUserId = async (userId) => {
 // 조회된 아이템 신규 계정에 등록
 const duplicateMenuData = async (sourceUserId, targetUserId) => {
     try {
-        const bucketName = 'model-narrow-road'; // S3 버킷 이름
         const sourcePrefix = `model/${sourceUserId}/`; // 원본 사용자 경로
         const targetPrefix = `model/${targetUserId}/`; // 대상 사용자 경로
 
@@ -410,7 +410,7 @@ const duplicateMenuData = async (sourceUserId, targetUserId) => {
 
         // 3. S3 이미지 복제
         const listParams = {
-            Bucket: bucketName,
+            Bucket: s3BucketName,
             Prefix: sourcePrefix,
         };
 
@@ -423,8 +423,8 @@ const duplicateMenuData = async (sourceUserId, targetUserId) => {
                 const targetKey = sourceKey.replace(sourcePrefix, targetPrefix); // 대상 Key
 
                 const copyParams = {
-                    Bucket: bucketName, // 대상 버킷
-                    CopySource: encodeURIComponent(`/${bucketName}/${sourceKey}`), // 반드시 인코딩
+                    Bucket: s3BucketName, // 대상 버킷
+                    CopySource: encodeURIComponent(`/${s3BucketName}/${sourceKey}`), // 반드시 인코딩
                     Key: targetKey, // 새 파일 Key
                 };
 

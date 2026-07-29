@@ -3323,6 +3323,7 @@ async function fetchData() {
         const allData = await window.electronAPI.getMenuInfoAll();
         userInfo = await window.electronAPI.getUserData() ?? {};
         const version = await window.electronAPI.getVersion();
+        const s3BucketName = window.electronAPI.s3BucketName;
 
         setVersion(version);
         
@@ -3345,7 +3346,7 @@ async function fetchData() {
         limitCount = userInfo?.limitCount ?? 10;
 
         // 이미지 받아오기
-        await window.electronAPI.downloadAllFromS3WithCache("model-narrow-road", `model/${userInfo.userId}`);
+        await window.electronAPI.downloadAllFromS3WithCache(s3BucketName, `model/${userInfo.userId}`);
         // 데이터가 올바르게 로드되었는지 확인
         if (!allData || !Array.isArray(allData.Items)) {
             openAlertModal("메뉴를 등록해 주세요.", "error");

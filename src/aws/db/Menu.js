@@ -24,6 +24,8 @@ const polling = new serialDataManager(serialCommCom1);
 const jwt = require('jsonwebtoken'); // jsonwebtoken 모듈 가져오기
 const JWT_SECRET = 'modelSecurity';
 
+const { s3BucketName } = require('../aws'); // aws.js에서 s3BucketName 가져오기
+
 // 유저정보 조회
 Menu.get('/get-user-info', async (req, res) => {
     try {
@@ -87,7 +89,6 @@ Menu.put('/set-menu-update-info', upload.single('image'), async (req, res) => {
     try {
         let { menuData } = req.body;
         const file = req.file; // 업로드된 파일
-        const bucketName = 'model-narrow-road';
 
         if (typeof menuData === 'string') {
             menuData = JSON.parse(menuData);
@@ -106,12 +107,12 @@ Menu.put('/set-menu-update-info', upload.single('image'), async (req, res) => {
         // 이미지 처리
         if (file) {
             // 새로운 이미지 업로드
-            const uploadResult = await uploadImageToS3andLocal(bucketName, file.buffer, file.originalname, menuData.menuId);
+            const uploadResult = await uploadImageToS3andLocal(s3BucketName, file.buffer, file.originalname, menuData.menuId);
             menuData.image = uploadResult.localPath;
 
             // 기존 이미지 삭제 (로컬 및 S3)
             if (existingMenu.image) {
-                await deleteImageFromS3andLocal(bucketName, existingMenu.image);
+                await deleteImageFromS3andLocal(s3BucketName, existingMenu.image);
             }
         } else {
             // 이미지가 없으면 기존 이미지를 유지
@@ -143,7 +144,7 @@ Menu.post('/set-admin-menu-info', upload.single('image'), async (req, res) => {
         const data = await getUser();
         const getMenuId = await incrementCounter(data.userId);
         const file = req.file; // 업로드된 파일
-        const bucketName = 'model-narrow-road';
+        // const bucketName = s3BucketName;
 
         if (typeof menuData === 'string') {
             menuData = JSON.parse(menuData);
@@ -153,7 +154,7 @@ Menu.post('/set-admin-menu-info', upload.single('image'), async (req, res) => {
             return res.status(400).json({ success: false, message: '파일과 메뉴 ID가 필요합니다.' });
         }
         // 1. 이미지 저장 (로컬 + S3)
-        const uploadResult = await uploadImageToS3andLocal(bucketName, file.buffer, file.originalname, getMenuId);
+        const uploadResult = await uploadImageToS3andLocal(s3BucketName, file.buffer, file.originalname, getMenuId);
         // 로컬이미지 경로
         menuData.image = uploadResult.localPath;
         // 2. 데이터 저장
@@ -682,12 +683,11 @@ Menu.post('/notice', upload.single('image'), async (req, res) => {
     try {
         let { title, content, startDate, endDate, location } = req.body;
         const file = req.file; // 업로드된 이미지 파일
-        const bucketName = 'model-narrow-road';
         let uploadResult;
 
         if (file) {
             // 1. 이미지 저장 (로컬 + S3)
-            uploadResult = await uploadNoticeImageToS3(bucketName, file.buffer, file.originalname, "notice");
+            uploadResult = await uploadNoticeImageToS3(s3BucketName, file.buffer, file.originalname, "notice");
         }
 
         // 2. 공지사항 데이터 준비
@@ -771,7 +771,7 @@ Menu.get('/notices', async (req, res) => {
         const { startDate, endDate, ascending } = req.query;
         deleteNoticeFiles();
         const notices = await getNoticesByDateRange(startDate, endDate, ascending === 'true');
-        await downloadAllFromS3WithCache("model-narrow-road", "model/notice");
+        await downloadAllFromS3WithCache(s3BucketName, "model/notice");
         res.status(200).json({ success: true, data: notices });
     } catch (error) {
         log.error('기간별 공지 조회 실패:', error);

@@ -7,6 +7,7 @@ const {SmTCatAgentClient} = require('./vcat/vcat');
 const { createVcatService } = require('./renderer/api/vcatApi'); // ⬅️ 새 파일
 
 const image = require('./aws/s3/utils/image');
+const { s3BucketName } = require('./aws/aws');
 const fs = require("fs");
 const path = require("path");
 
@@ -47,6 +48,9 @@ const vcat = createVcatService({
 
 // contextBridge로 안전하게 API 노출
 contextBridge.exposeInMainWorld('electronAPI', {
+
+    // S3 버킷 이름 (aws.js에서 관리)
+    s3BucketName,
 
     // 함수 직접 호출
     on: (channel, callback) => {
